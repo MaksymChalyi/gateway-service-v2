@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-//@RequestMapping("/api")
+@RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
 public class ProfileController {

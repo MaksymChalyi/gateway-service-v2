@@ -17,21 +17,21 @@ import static org.springframework.data.relational.core.query.Query.query;
 @RequiredArgsConstructor
 public class UserSessionRepository {
 
-  private final R2dbcEntityTemplate entityTemplate;
+    private final R2dbcEntityTemplate entityTemplate;
 
-  public Mono<UserSession> createSession(UserInfo userInfo, Instant expiresAt) {
-    UserSession userSession = new UserSession();
-    userSession.setId(UUID.randomUUID().toString());
-    userSession.setEmail(userInfo.getEmail());
-    userSession.setName(userInfo.getName());
-    userSession.setExpiresAt(expiresAt);
-    return entityTemplate.insert(userSession);
-  }
+    public Mono<UserSession> createSession(UserInfo userInfo, Instant expiresAt) {
+        UserSession userSession = new UserSession();
+        userSession.setId(UUID.randomUUID().toString());
+        userSession.setEmail(userInfo.getEmail());
+        userSession.setName(userInfo.getName());
+        userSession.setExpiresAt(expiresAt);
+        return entityTemplate.insert(userSession);
+    }
 
-  public Mono<UserSession> findById(String id) {
-    return entityTemplate.selectOne(
-        query(where("id").is(id)),
-        UserSession.class);
-  }
+    public Mono<UserSession> findById(String id) {
+        return entityTemplate.selectOne(
+                query(where("id").is(id)),
+                UserSession.class);
+    }
 
 }

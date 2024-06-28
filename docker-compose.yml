@@ -14,15 +14,15 @@ services:
     networks:
       - my-network  # Додайте цей рядок для підключення до мережі
 
-  postgres:
-    image: 'postgres:15'
-    container_name: 'java-postgres2'
-    environment:
-      - 'POSTGRES_USER=postgres'
-      - 'POSTGRES_HOST_AUTH_METHOD=trust'
-      - 'POSTGRES_DB=employee_management'
-    networks:
-      - my-network  # Додайте цей рядок для підключення до мережі
+#  postgres:
+#    image: 'postgres:15'
+#    container_name: 'java-postgres2'
+#    environment:
+#      - 'POSTGRES_USER=postgres'
+#      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+#      - 'POSTGRES_DB=employee_management'
+#    networks:
+#      - my-network  # Додайте цей рядок для підключення до мережі
 
   consul:
     image: bitnami/consul
