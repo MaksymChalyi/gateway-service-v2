@@ -4,19 +4,25 @@ import com.maksimkaxxl.gatewayservicev2.auth.GoogleAuthenticationService;
 import com.maksimkaxxl.gatewayservicev2.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -24,6 +30,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
+  @Value("${frontend-uri}")
+  private String frontEndUri;
+
+  @Value("${redirect-url}")
+  private String redirectAfterSuccessAuthUrl;
   private static final String PREFIX_OAUTH = "/oauth";
   private static final String ENDPOINT_AUTHENTICATE = PREFIX_OAUTH + "/authenticate";
   private static final String ENDPOINT_CALLBACK = PREFIX_OAUTH + "/callback";
@@ -33,6 +44,26 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
   private final GoogleAuthenticationService googleAuthenticationService;
 
   private final SessionService sessionService;
+
+  @Bean
+  public CorsWebFilter corsWebFilter() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowCredentials(true);
+    configuration.setAllowedOrigins(List.of(frontEndUri));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setExposedHeaders(List.of("Location"));
+
+    // Add a custom CORS configuration for the OAuth2 redirect endpoint
+    configuration.addAllowedOriginPattern("https://accounts.google.com");
+    configuration.addAllowedHeader("Authorization");
+    configuration.addAllowedMethod("GET");
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+
+    return new CorsWebFilter(source);
+  }
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -63,7 +94,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         .doOnNext(userInfo -> log.info("User authenticated: {}", userInfo))
         .flatMap(sessionService::saveSession)
         .flatMap(session -> sessionService.addSessionCookie(exchange, session))
-        .then(sendRedirect(exchange, "/api/profile")));
+        .then(sendRedirect(exchange, redirectAfterSuccessAuthUrl)));
   }
 
   private Mono<Void> verifyState(String state, ServerHttpRequest request) {
