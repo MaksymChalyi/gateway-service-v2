@@ -66,7 +66,7 @@ public class GoogleAuthenticationService {
 
   public Mono<UserInfo> processAuthenticationCallback(String code, String redirectUri) {
     return requestOauthTokens(code, redirectUri)
-        .flatMap(this::parseAndVerifyIdToken)
+        .flatMap(oauthTokenResponse -> parseAndVerifyIdToken(oauthTokenResponse))
         .map(idToken -> UserInfo.builder()
             .email(idToken.getPayload().getEmail())
             .name((String) idToken.getPayload().get("name"))
