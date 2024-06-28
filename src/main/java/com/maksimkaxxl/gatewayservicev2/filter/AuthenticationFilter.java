@@ -94,7 +94,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         .doOnNext(userInfo -> log.info("User authenticated: {}", userInfo))
         .flatMap(sessionService::saveSession)
         .flatMap(session -> sessionService.addSessionCookie(exchange, session))
-        .then(sendRedirect(exchange, redirectAfterSuccessAuthUrl)));
+        .then(sendRedirect(exchange, frontEndUri)));
   }
 
   private Mono<Void> verifyState(String state, ServerHttpRequest request) {
