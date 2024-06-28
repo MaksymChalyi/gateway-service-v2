@@ -4,6 +4,7 @@ import com.maksimkaxxl.gatewayservicev2.auth.GoogleAuthenticationService;
 import com.maksimkaxxl.gatewayservicev2.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -34,6 +35,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
   private final SessionService sessionService;
 
+  @Value("${frontend-uri}")
+  private String frontEndUri;
+
+  @Value("${redirect-url}")
+  private String redirectAfterSuccessAuthUrl;
+
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     ServerHttpRequest request = exchange.getRequest();
@@ -63,7 +70,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         .doOnNext(userInfo -> log.info("User authenticated: {}", userInfo))
         .flatMap(sessionService::saveSession)
         .flatMap(session -> sessionService.addSessionCookie(exchange, session))
-        .then(sendRedirect(exchange, "/api/profile")));
+        .then(sendRedirect(exchange, redirectAfterSuccessAuthUrl)));
   }
 
   private Mono<Void> verifyState(String state, ServerHttpRequest request) {
