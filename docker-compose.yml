@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 'spring-cloud-gatewayV2'
+    ports:
+      - '1000:1000'
+    env_file:
+      - ./.env
+    depends_on:
+      - consul
+
+  consul:
+    image: bitnami/consul
+    container_name: "gws-consul-v2"
+    ports:
+      - "8500:8500"
+    command: "consul agent -dev -ui -client=0.0.0.0"
+
+
+networks:
+  default:
+    name: my-network
+    driver: bridge
+    external: true

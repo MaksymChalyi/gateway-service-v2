@@ -19,9 +19,10 @@ spring:
   config:
     import: optional:consul:/
   cloud:
-    #    consul:
-    #      host: localhost
-    #      port: 8500
+    consul:
+#        host: localhost
+        host: consul
+        port: 8500
     #      discovery:
     #        health-check-path: /health
     gateway:
